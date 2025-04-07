@@ -1,77 +1,55 @@
-const express = require('express');
-const cors = require('cors');
-const uri = "mongodb://localhost";
-const dbName = "ma-base"; 
-const collectionName = "utilisateurs";
-const {MongoClient} = require('mongodb');
+// Users.js
+const { ObjectId } = require('mongodb');
+const bcrypt = require('bcrypt');
 
 class Users {
-    constructor(client) {
-      this.client = client
-      client.connect();
-    }
-  
-    create(login, password, lastname, firstname) {
-      return new Promise((resolve, reject) => {
-        const result = collectionName.insertOne({login,password,lastname,firstname});
-        let userid = result.id; 
-         // À remplacer par une requête bd
-        if(false) {
-          //erreur
-          reject();
-        } else {
-          resolve(userid);
-        }
-      });
-    }
-  
-    get(userid) {
-      return new Promise((resolve, reject) => {
-        const user = {
-           login: "pikachu",
-           password: "1234",
-           lastname: "chu",
-           firstname: "pika"
-        }; // À remplacer par une requête bd
-  
-        if(false) {
-          //erreur
-          reject();
-        } else {
-          if(userid == 1) {
-            resolve(user);
-          } else {
-            resolve(null);
-          }
-        }
-      });
-    }
-  
-    async exists(login) {
-      return new Promise((resolve, reject) => {
-        if(false) {
-          //erreur
-          reject();
-        } else {
-          resolve(true);
-        }
-      });
-    }
-  
-    checkpassword(login, password) {
-      return new Promise((resolve, reject) => {
-        let userid = 1; // À remplacer par une requête bd
-        if(false) {
-          //erreur
-          reject();
-        } else {
-          resolve(userid);
-        }
-      });
-    }
-  
+  constructor(client) {
+    this.client = client;
+    this.db = client.db("ma-base");
+    this.collection = this.db.collection("utilisateurs");
   }
-  
-  exports.default = Users;
-  
+
+  async create(login, password, lastname, firstname) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const result = await this.collection.insertOne({ login, password: hashedPassword, lastname, firstname });
+      return result.insertedId;
+    } catch (e) {
+      throw new Error("Erreur lors de la création de l'utilisateur : " + e.message);
+    }
+  }
+
+  async get(userid) {
+    try {
+      const user = await this.collection.findOne({ _id: new ObjectId(userid) });
+      return user;
+    } catch (e) {
+      throw new Error("Erreur lors de la récupération de l'utilisateur");
+    }
+  }
+
+  async exists(login) {
+    try {
+      const user = await this.collection.findOne({ login });
+      return !!user;
+    } catch (e) {
+      throw new Error("Erreur lors de la vérification du login");
+    }
+  }
+
+  async checkpassword(login, password) {
+    try {
+      const user = await this.collection.findOne({ login });
+      if (!user) return null;
+
+      const match = await bcrypt.compare(password, user.password);
+      return match;
+    } catch (e) {
+      throw new Error("Erreur lors de la vérification du mot de passe");
+    }
+  }
+}
+
+module.exports = Users;
+
   

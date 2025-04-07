@@ -1,65 +1,109 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
+const { MongoClient } = require('mongodb');
+const Users = require('./entities/users'); // notre classe
 
 const app = express();
 const port = 3000;
-
-const {MongoClient} = require('mongodb');
-app.use(cors());
-app.use(express.json()); // Pour lire les JSON dans le body des requêtes
-
 const uri = "mongodb://localhost";
-const dbName = "ma-base"; // nom de ta base
-const collectionName = "utilisateurs"; // nom de ta collection
+const jwt = require('jsonwebtoken'); 
+const verifyToken = require('./Middlewares/authMiddleware');
+require('dotenv').config();
 
-// Route POST pour ajouter un utilisateur
-app.post('/add-user', async (req, res) => {
-  const { nom, mail } = req.body;
 
-  if (!nom || !mail) {
-    return res.status(400).json({ message: "Nom et mail sont requis." });
-  }
 
+app.use(cors());
+app.use(express.json());
+
+let usersManager; // Instance de la classe Users
+
+// Connexion MongoDB + setup
+async function init() {
   const client = new MongoClient(uri);
   try {
     await client.connect();
-    const db = client.db(dbName);
-    const collection = db.collection(collectionName);
+    console.log("✅ Connecté à MongoDB");
 
-    const result = await collection.insertOne({ nom, mail });
-
-    res.status(201).json({
-      message: "Utilisateur ajouté ✅",
-      userId: result.insertedId,
-    });
+    usersManager = new Users(client); // on instancie la classe Users
   } catch (e) {
-    console.error("❌ Erreur MongoDB :", e);
-    res.status(500).json({ message: "Erreur serveur." });
-  } finally {
-    await client.close();
+    console.error("❌ Erreur de connexion MongoDB :", e);
+  }
+}
+init();
+
+// Route POST pour créer un utilisateur (inscription)
+app.post('/add-user', async (req, res) => {
+  const { login, password, lastname, firstname } = req.body;
+
+  if (!login || !password || !lastname || !firstname) {
+    return res.status(400).json({ message: "Champs manquants" });
+  }
+
+  try {
+    const exist = await usersManager.exists(login);
+    if (exist) return res.status(409).json({ message: "Utilisateur déjà existant" });
+
+    const userId = await usersManager.create(login, password, lastname, firstname);
+    res.status(201).json({ message: "Utilisateur créé", userId });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Erreur lors de la création de l'utilisateur" });
   }
 });
 
-async function main() {
-    const uri = "mongodb://localhost";
-    const client = new MongoClient(uri);
-    
-    try {
-      await client.connect();
-      console.log("✅ Connecté à MongoDB");
-  
-      // Test : afficher les bases de données
-      const databasesList = await client.db().admin().listDatabases();
-      console.log("📂 Bases de données :");
-      databasesList.databases.forEach(db => console.log(` - ${db.name}`));
-  
-    } catch (e) {
-      console.error("❌ Erreur de connexion à MongoDB :", e);
-    } finally {
-      await client.close();
-    }
+// Route pour se connecter(connexion)
+app.post('/connexion', async (req, res) => {
+  const { login, password } = req.body;
+
+  if (!login || !password) {
+    return res.status(400).json({ message: "Champs manquants" });
   }
 
+  try {
+    const exist = await usersManager.exists(login);
+    if (!exist) {
+      return res.status(404).json({ message: "Utilisateur non existant !" });
+    }
 
-  
-app.listen(port, () => console.log('le serveur écoute le port 3000')); 
+    const userId = await usersManager.checkpassword(login, password);
+    if (!userId) {
+      return res.status(401).json({ message: "Mot de passe incorrect" });
+    }
+    const token = jwt.sign(
+      { userId: userId.toString(), login },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    // Authentification réussie
+    res.status(200).json({ message: "Connexion réussie ✅", token });
+  } catch (e) {
+    console.error("❌ Erreur dans /connexion :", e);
+    res.status(500).json({ message: "Erreur serveur lors de la connexion" });
+  }
+});
+
+
+
+app.get('/profil/:id', verifyToken, async (req, res) => {
+  const userId = req.params.id;
+  console.log(userId)
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ message: "Accès interdit" });
+  }
+
+  try {
+    const user = await usersManager.get(userId);
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json(userWithoutPassword);
+  } catch (e) {
+    console.error("Erreur dans /profil :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+
+
+app.listen(port, () => console.log(`🚀 Le serveur écoute sur http://localhost:${port}`));
