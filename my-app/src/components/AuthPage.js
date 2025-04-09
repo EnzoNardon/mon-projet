@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 export default function AuthPage() {
+
+// dans ton composant :
+const navigate = useNavigate();
+
+
+
   const [signupData, setSignupData] = useState({
     login: '', password: '', lastname: '', firstname: '',
   });
@@ -35,16 +41,20 @@ export default function AuthPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginMessage('');
-
+  
     const res = await fetch(`${API_URL}/connexion`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(loginData),
     });
-
+    console.log(res);
+  
     const json = await res.json();
     if (res.ok) {
-      setLoginMessage(`✅ Connexion réussie ! ID : ${json.userId}`);
+      localStorage.setItem('token', json.token);
+      localStorage.setItem('userId', json.userId); // si tu le renvoies dans la réponse
+      setLoginMessage("Connexion réussie !");
+      navigate('/profil');
     } else {
       setLoginMessage(`❌ ${json.message}`);
     }

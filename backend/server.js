@@ -86,14 +86,16 @@ app.post('/connexion', async (req, res) => {
 
 
 app.get('/profil/:id', verifyToken, async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.user.userId;
   console.log(userId)
-  if (req.user.userId !== userId) {
+  console.log(req.params)
+
+  if (!userId) {
     return res.status(403).json({ message: "Accès interdit" });
   }
 
   try {
-    const user = await usersManager.get(userId);
+    const user = await usersManager.get(req.params.id);
     if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
     const { password, ...userWithoutPassword } = user;
