@@ -76,7 +76,12 @@ app.post('/connexion', async (req, res) => {
       { expiresIn: '1h' }
     );
     // Authentification réussie
-    res.status(200).json({ message: "Connexion réussie ✅", token });
+    res.status(200).json({
+      message: "Connexion réussie ✅",
+      token,
+      userId: userId.toString() 
+    });
+    
   } catch (e) {
     console.error("❌ Erreur dans /connexion :", e);
     res.status(500).json({ message: "Erreur serveur lors de la connexion" });
@@ -87,15 +92,14 @@ app.post('/connexion', async (req, res) => {
 
 app.get('/profil/:id', verifyToken, async (req, res) => {
   const userId = req.user.userId;
-  console.log(userId)
-  console.log(req.params)
 
   if (!userId) {
     return res.status(403).json({ message: "Accès interdit" });
   }
-
+  //console.log(req)
   try {
     const user = await usersManager.get(req.params.id);
+    console.log(user);
     if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
     const { password, ...userWithoutPassword } = user;

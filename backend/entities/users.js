@@ -41,9 +41,9 @@ class Users {
     try {
       const user = await this.collection.findOne({ login });
       if (!user) return null;
-
+  
       const match = await bcrypt.compare(password, user.password);
-      return match;
+      return match ? user._id : null;
     } catch (e) {
       throw new Error("Erreur lors de la vérification du mot de passe");
     }
