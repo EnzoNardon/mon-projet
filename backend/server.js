@@ -8,6 +8,7 @@ const Posts = require('./entities/Posts');
 const app = express();
 const port = 3000;
 const uri = "mongodb://localhost";
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
 const verifyToken = require('./Middlewares/authMiddleware');
 require('dotenv').config();
@@ -65,33 +66,65 @@ app.post('/connexion', async (req, res) => {
   }
 
   try {
-    const exist = await usersManager.exists(login);
-    if (!exist) {
+    const user = await usersManager.getUserByLogin(login);
+    if (!user) {
       return res.status(404).json({ message: "Utilisateur non existant !" });
     }
 
-    const userId = await usersManager.checkpassword(login, password);
-    if (!userId) {
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
+    
+    if (!user.validated) {
+      return res.status(403).json({ message: "Votre compte doit être validé par un administrateur." });
+    }
+    
+
+    
+
     const token = jwt.sign(
-      { userId: userId.toString(), login },
+      { userId: user._id.toString(), login: user.login, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    // Authentification réussie
-    res.status(200).json({
-      message: "Connexion réussie ✅",
-      token,
-      userId: userId.toString() 
-    });
-    
+
+    res.status(200).json({ message: "Connexion réussie ✅", token, userId: user._id.toString() });
+
   } catch (e) {
-    console.error("❌ Erreur dans /connexion :", e);
-    res.status(500).json({ message: "Erreur serveur lors de la connexion" });
+    console.error("Erreur dans /connexion :", e);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 
+
+app.get('/users/pending', verifyToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+  }
+
+  try {
+    const pendingUsers = await usersManager.getPendingUsers();
+    res.status(200).json(pendingUsers);
+  } catch (e) {
+    console.error("Erreur dans /users/pending :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+app.put('/users/validate/:id', verifyToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+  }
+
+  try {
+    const userId = req.params.id;
+    await usersManager.validateUser(userId);
+    res.status(200).json({ message: "Utilisateur validé ✅" });
+  } catch (e) {
+    console.error("Erreur dans /users/validate :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 
 
 app.get('/profil/:id', verifyToken, async (req, res) => {
