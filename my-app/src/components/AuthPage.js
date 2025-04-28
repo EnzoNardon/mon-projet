@@ -48,6 +48,7 @@ export default function AuthPage() {
     const json = await res.json();
     if (res.ok && json.userId) {
       localStorage.setItem('token', json.token);
+      console.log(json.token)
       localStorage.setItem('userId', json.userId);
       navigate('/profil');
     } else {

@@ -2,7 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
-const Users = require('./entities/users'); // notre classe
+const Users = require('./entities/users'); 
+const Posts = require('./entities/Posts');
 
 const app = express();
 const port = 3000;
@@ -13,24 +14,27 @@ require('dotenv').config();
 
 
 
+
 app.use(cors());
 app.use(express.json());
 
-let usersManager; // Instance de la classe Users
+let usersManager;
+let postsManager;
 
-// Connexion MongoDB + setup
 async function init() {
   const client = new MongoClient(uri);
   try {
     await client.connect();
     console.log("✅ Connecté à MongoDB");
 
-    usersManager = new Users(client); // on instancie la classe Users
+    usersManager = new Users(client);
+    postsManager = new Posts(client); // ✅ instanciation ici
   } catch (e) {
     console.error("❌ Erreur de connexion MongoDB :", e);
   }
 }
 init();
+
 
 // Route POST pour créer un utilisateur (inscription)
 app.post('/add-user', async (req, res) => {
@@ -106,6 +110,97 @@ app.get('/profil/:id', verifyToken, async (req, res) => {
     res.status(200).json(userWithoutPassword);
   } catch (e) {
     console.error("Erreur dans /profil :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.post('/posts', verifyToken, async (req, res) => {
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ message: "Le contenu du post est vide." });
+  }
+
+  try {
+    const userId = req.user.userId; // récupéré du token
+    const login = req.user.login;   // 👈 récupéré aussi depuis le token
+
+    const postId = await postsManager.createPost(userId, login, content);
+
+    res.status(201).json({ message: "Post créé ✅", postId });
+  } catch (e) {
+    console.error("Erreur dans /posts :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+
+app.get('/posts/user/:userId', verifyToken, async (req, res) => {
+  const { userId } = req.params;
+
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ message: "Accès interdit" });
+  }
+
+  try {
+    const posts = await postsManager.getPostsByUser(userId);
+    res.status(200).json(posts);
+  } catch (e) {
+    console.error("Erreur dans /posts/user/:userId :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.delete('/posts/:postId', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.user.userId; // Récupéré depuis le token
+
+  try {
+    const post = await postsManager.getPostById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post non trouvé" });
+    }
+
+    // Vérifie que l'utilisateur est bien le propriétaire du post
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Accès interdit : ce post n'est pas à toi" });
+    }
+
+    await postsManager.deletePost(postId);
+
+    res.status(200).json({ message: "Post supprimé ✅" });
+  } catch (e) {
+    console.error("Erreur dans /posts/:postId (DELETE) :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.put('/posts/:postId', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const userId = req.user.userId;
+
+  if (!content) {
+    return res.status(400).json({ message: "Le contenu est requis pour la mise à jour." });
+  }
+
+  try {
+    const post = await postsManager.getPostById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post non trouvé" });
+    }
+
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Accès interdit : tu ne peux modifier que tes posts" });
+    }
+
+    await postsManager.updatePost(postId, content);
+
+    res.status(200).json({ message: "Post mis à jour ✅" });
+  } catch (e) {
+    console.error("Erreur dans /posts/:postId (PUT) :", e);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
