@@ -27,7 +27,7 @@ export default function ValidationPage() {
   const validateUser = async (userId) => {
     const token = localStorage.getItem('token');
 
-    await fetch(`http://localhost:3000/users/validate/${userId}`, {
+    await fetch(`http://localhost:3000/users/validation/${userId}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` },
     });

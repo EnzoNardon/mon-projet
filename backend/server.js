@@ -111,7 +111,7 @@ app.get('/users/pending', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
-app.put('/users/validate/:id', verifyToken, async (req, res) => {
+app.put('/users/validation/:id', verifyToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: "Accès réservé aux administrateurs" });
   }
@@ -146,6 +146,17 @@ app.get('/profil/:id', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+app.get('/Allposts', verifyToken, async (req, res) => {
+  try {
+    const posts = await postsManager.getAllPosts();
+    res.status(200).json(posts);
+  } catch (e) {
+    console.error("Erreur dans /posts (GET) :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 
 app.post('/posts', verifyToken, async (req, res) => {
   const { content } = req.body;

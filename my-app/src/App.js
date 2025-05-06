@@ -15,7 +15,7 @@ function App() {
         <Route path= "/messages" element={<MyMessages/>}/>
         <Route path="/validation" element={<ValidationPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forum" element={<OpenForum/>} />
+        <Route path="/OpenForum" element={<OpenForum/>} />
       </Routes>
     </Router>
   );

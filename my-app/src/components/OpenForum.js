@@ -1,53 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './OpenForum.css';
 
 export default function OpenForum() {
   const [posts, setPosts] = useState([]);
-  const [search, setSearch] = useState('');
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:3000/posts', {
+    if (!token) {
+      navigate('/');
+      return;
+    }
+
+    fetch('http://localhost:3000/Allposts', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
       .then(res => res.json())
-      .then(data => setPosts(data))
-      .catch(err => console.error('Failed to fetch posts:', err));
-  }, []);
+      .then(data => {
+        setPosts(data);
+        setFilteredPosts(data);
+      })
+      .catch(err => {
+        console.error(err);
+        navigate('/');
+      });
+  }, [navigate]);
 
-  const filteredPosts = posts.filter(post =>
-    post.content.toLowerCase().includes(search.toLowerCase()) ||
-    post.login.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    if (term === '') {
+      setFilteredPosts(posts);
+    } else {
+      const filtered = posts.filter(post =>
+        post.content.toLowerCase().includes(term) ||
+        post.login.toLowerCase().includes(term)
+      );
+      setFilteredPosts(filtered);
+    }
+  };
 
   return (
-    <div className="openforum-container">
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Rechercher par utilisateur ou mot-clé"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+    <div className="forum-container">
+      <h2>🌍 OpenForum</h2>
 
-      <div className="forum-posts">
-        {filteredPosts.length === 0 ? (
-          <p>Aucun message trouvé.</p>
-        ) : (
-          filteredPosts.map(post => (
-            <div key={post._id} className="forum-post-card">
-              <p><strong>@{post.login}</strong></p>
+      <input
+        type="text"
+        placeholder="Rechercher par contenu ou par utilisateur..."
+        value={searchTerm}
+        onChange={handleSearch}
+        className="search-bar"
+      />
+
+      {filteredPosts.length === 0 ? (
+        <p>Aucun message trouvé.</p>
+      ) : (
+        <div className="posts-list">
+          {filteredPosts.map(post => (
+            <div key={post._id} className="post-card">
+              <p><strong>{post.login}</strong> a écrit :</p>
               <p>{post.content}</p>
-              <span className="forum-post-date">
+              <span className="post-date">
                 {new Date(post.createdAt).toLocaleString('fr-FR')}
               </span>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={() => navigate('/profil')} className="back-button">
+        ⬅️ Retour au profil
+      </button>
     </div>
   );
 }

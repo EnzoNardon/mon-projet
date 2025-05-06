@@ -36,7 +36,7 @@ export default function ProfilePage() {
   return (
     <>
       <div className="header-bar">
-        <Link to="/" className="header-icon">
+        <Link to="/OpenForum" className="header-icon">
           🏠
         </Link>
         <Link to="/profil" className="header-icon active">
