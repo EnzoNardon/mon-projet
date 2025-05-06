@@ -1,0 +1,47 @@
+.openforum-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .search-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+  
+  .forum-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .forum-post-card {
+    background-color: #f4f4f4;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .forum-post-card p {
+    margin: 5px 0;
+  }
+  
+  .forum-post-date {
+    display: block;
+    font-size: 12px;
+    color: #555;
+    text-align: right;
+  }
+  

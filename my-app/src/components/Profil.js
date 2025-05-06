@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Profil.css'; // ← on va créer ce fichier CSS
+import { useNavigate, Link } from 'react-router-dom';
+import './Profil.css';
+import logo from '../logo.png';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -9,7 +10,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-
+    
     if (!token || !userId) {
       navigate('/');
       return;
@@ -33,18 +34,34 @@ export default function ProfilePage() {
   if (!user) return <p>Chargement...</p>;
 
   return (
-    <div className="profile-container">
-      <h2>👤 Mon Profil</h2>
-      <div className="profile-card">
-        <p><strong>Login :</strong> {user.login}</p>
-        <p><strong>Nom :</strong> {user.lastname}</p>
-        <p><strong>Prénom :</strong> {user.firstname}</p>
+    <>
+      <div className="header-bar">
+        <Link to="/" className="header-icon">
+          🏠
+        </Link>
+        <Link to="/profil" className="header-icon active">
+          👤
+        </Link>
       </div>
 
-      <div className="profile-buttons">
-        <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
-        <button onClick={() => navigate('/')}>🏠 Accueil</button>
+      <div className="profile-logo-container">
+        <img src={logo} alt="Profile Logo" className="profile-logo" />
       </div>
-    </div>
+
+      <div className="profile-container">
+        <div className="profile-card">
+          <div className="profile-info">
+            <p><strong>Nom d'utilisateur:</strong> {user.login}</p>
+            <p><strong>Nom:</strong> {user.lastname}</p>
+            <p><strong>Prénom:</strong> {user.firstname}</p>
+          </div>
+        </div>
+
+        <div className="profile-buttons">
+          <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
+          <button onClick={() => navigate('/')}>🏠 Accueil</button>
+        </div>
+      </div>
+    </>
   );
 }

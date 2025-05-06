@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './MyMessages.css';
-
 
 export default function MyMessages() {
   const [posts, setPosts] = useState([]);
@@ -12,7 +11,6 @@ export default function MyMessages() {
   const [editingContent, setEditingContent] = useState('');
   const navigate = useNavigate();
 
-  // ✅ fetchPosts maintenant est mémorisé avec useCallback
   const fetchPosts = useCallback(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
@@ -33,11 +31,11 @@ export default function MyMessages() {
         console.error(err);
         navigate('/');
       });
-  }, [navigate]); // ✅ navigate est une dépendance
+  }, [navigate]);
 
   useEffect(() => {
     fetchPosts();
-  }, [fetchPosts]); // ✅ propre, plus de warning
+  }, [fetchPosts]);
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
@@ -115,74 +113,90 @@ export default function MyMessages() {
   };
 
   return (
-    <div className="messages-container">
-      <h2>📬 Mes Messages</h2>
+    <>
+      <div className="header-bar">
+        <Link to="/" className="header-icon">
+          🏠
+        </Link>
+        <Link to="/profil" className="header-icon">
+          👤
+        </Link>
+      </div>
 
-      {/* Formulaire création post */}
-      <form onSubmit={handlePostSubmit} className="create-post-form">
-        <textarea
-          value={newPost}
-          onChange={(e) => setNewPost(e.target.value)}
-          placeholder="Quoi de neuf ?"
-          rows="4"
-        />
-        <button type="submit">Publier</button>
-      </form>
+      <div className="messages-container">
+        <h2>📬 Mes Messages</h2>
 
-      {/* Liste des posts */}
-      {posts.length === 0 ? (
-        <p>Pas encore de messages...</p>
-      ) : (
-        <div className="posts-list">
-          {posts.map(post => (
-            <div key={post._id} className="post-card">
-              <p><strong>{post.login}</strong> a écrit :</p>
+        <form onSubmit={handlePostSubmit} className="create-post-form">
+          <textarea
+            value={newPost}
+            onChange={(e) => setNewPost(e.target.value)}
+            placeholder="Quoi de neuf ?"
+            rows="4"
+          />
+          <button type="submit">Publier</button>
+        </form>
 
-              {editingPostId === post._id ? (
-                <>
-                  <textarea
-                    value={editingContent}
-                    onChange={(e) => setEditingContent(e.target.value)}
-                    rows="3"
-                  />
-                  <div className="edit-buttons">
-                    <button onClick={saveEdit}>💾 Enregistrer</button>
-                    <button onClick={() => setEditingPostId(null)}>❌ Annuler</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p>{post.content}</p>
-                  <span className="post-date">{new Date(post.createdAt).toLocaleString('fr-FR')}</span>
-                  <div className="post-actions">
-                    <button onClick={() => confirmDeletePost(post._id)}>🗑️ Supprimer</button>
-                    <button onClick={() => {
-                      setEditingPostId(post._id);
-                      setEditingContent(post.content);
-                    }}>✏️ Modifier</button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+        {posts.length === 0 ? (
+          <p>Pas encore de messages...</p>
+        ) : (
+          <div className="posts-list">
+            {posts.map(post => (
+              <div key={post._id} className="post-card">
+                <p><strong>{post.login}</strong> a écrit :</p>
 
-      <button onClick={() => navigate('/profil')}>⬅️ Retour au profil</button>
+                {editingPostId === post._id ? (
+                  <>
+                    <textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      rows="3"
+                    />
+                    <div className="edit-buttons">
+                      <button onClick={saveEdit}>💾 Enregistrer</button>
+                      <button onClick={() => setEditingPostId(null)}>❌ Annuler</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>{post.content}</p>
+                    <span className="post-date">
+                      {new Date(post.createdAt).toLocaleString('fr-FR')}
+                    </span>
+                    <div className="post-actions">
+                      <button onClick={() => confirmDeletePost(post._id)}>
+                        🗑️ Supprimer
+                      </button>
+                      <button onClick={() => {
+                        setEditingPostId(post._id);
+                        setEditingContent(post.content);
+                      }}>
+                        ✏️ Modifier
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
-      {/* Modale de confirmation suppression */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Confirmation</h3>
-            <p>Es-tu sûr de vouloir supprimer ce message ?</p>
-            <div className="modal-buttons">
-              <button onClick={deletePost}>✅ Oui, supprimer</button>
-              <button onClick={() => setShowModal(false)}>❌ Annuler</button>
+        <Link to="/profil" className="back-button">
+          ⬅️ Retour au profil
+        </Link>
+
+        {showModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>Confirmation</h3>
+              <p>Es-tu sûr de vouloir supprimer ce message ?</p>
+              <div className="modal-buttons">
+                <button onClick={deletePost}>✅ Oui, supprimer</button>
+                <button onClick={() => setShowModal(false)}>❌ Annuler</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
