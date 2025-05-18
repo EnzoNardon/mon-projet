@@ -16,20 +16,30 @@ export default function AuthPage() {
     e.preventDefault();
     setLoginMessage('');
 
-    const res = await fetch(`${API_URL}/connexion`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(loginData),
-    });
+    try {
+      const res = await fetch(`${API_URL}/connexion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData),
+      });
 
-    const json = await res.json();
-    if (res.ok && json.userId) {
-      localStorage.setItem('token', json.token);
-      console.log(json.token)
-      localStorage.setItem('userId', json.userId);
-      navigate('/profil');
-    } else {
-      setLoginMessage(`❌ ${json.message || "Erreur de connexion"}`);
+      const json = await res.json();
+
+      if (res.ok && json.userId && json.token) {
+        localStorage.setItem('token', json.token);
+        localStorage.setItem('userId', json.userId);
+
+        // ✅ Décode le token pour extraire le rôle
+        const payload = JSON.parse(atob(json.token.split('.')[1]));
+        localStorage.setItem('role', payload.role);
+
+        navigate('/profil');
+      } else {
+        setLoginMessage(`❌ ${json.message || "Erreur de connexion"}`);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la connexion :', err);
+      setLoginMessage('❌ Erreur serveur.');
     }
   };
 

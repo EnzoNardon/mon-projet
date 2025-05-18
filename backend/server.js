@@ -111,7 +111,7 @@ app.get('/users/pending', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
-app.put('/users/validation/:id', verifyToken, async (req, res) => {
+app.put('/users/validate/:id', verifyToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: "Accès réservé aux administrateurs" });
   }
