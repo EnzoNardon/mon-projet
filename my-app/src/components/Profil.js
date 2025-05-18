@@ -5,11 +5,14 @@ import logo from '../logo.png';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    const role = localStorage.getItem('role');
+    setIsAdmin(role === 'admin')
     
     if (!token || !userId) {
       navigate('/');
@@ -37,7 +40,7 @@ export default function ProfilePage() {
     <>
       <div className="header-bar">
         <Link to="/OpenForum" className="header-icon">
-          🏠
+        🌍
         </Link>
         <Link to="/profil" className="header-icon active">
           👤
@@ -60,6 +63,11 @@ export default function ProfilePage() {
         <div className="profile-buttons">
           <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
           <button onClick={() => navigate('/')}>🏠 Accueil</button>
+          {isAdmin && (
+          <button onClick={() => navigate('/validation')} className="back-button">
+            👑 Gérer les validations
+          </button>
+        )}
         </div>
       </div>
     </>
