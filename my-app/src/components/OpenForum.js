@@ -58,8 +58,24 @@ export default function OpenForum() {
   return (
     <>
       <div className="header-bar">
-        <div className="header-icon" onClick={() => navigate('/profil')}>👤</div>
-        <div className="header-icon" onClick={() => navigate('/')}>🏠</div>
+        <div className="header-left">
+          <span className="header-title">Organizz'Asso</span>
+        </div>
+
+        <div className="header-right">
+          <button className="logout-button" onClick={() => navigate('/openforum')}>
+            🌍 OpenForum
+          </button>
+          <button className="logout-button" onClick={() => navigate('/profil')}>
+            👤 Mon profil
+          </button>
+          <button className="logout-button" onClick={() => {
+            localStorage.clear();
+            navigate('/');
+          }}>
+            🚪 Déconnexion
+          </button>
+        </div>
       </div>
 
       <div className="openforum-container">
@@ -71,11 +87,17 @@ export default function OpenForum() {
           className="search-bar"
         />
 
+        <button onClick={() => navigate('/messages')} className="back-button">
+          Postez un message !
+        </button>
+
         {filteredPosts.length === 0 ? (
           <p>Aucun message trouvé.</p>
         ) : (
           filteredPosts.map(post => (
-            <div key={post._id} className="openforum-card">
+            <div key={post._id} className="openforum-card" 
+            onClick={() => navigate(`/message/${post._id}`)}
+            style={{ cursor: 'pointer' }}>
               <p><strong>{post.login}</strong> a écrit :</p>
               <p>{post.content}</p>
               <div className="post-date">
@@ -85,9 +107,7 @@ export default function OpenForum() {
           ))
         )}
 
-        <button onClick={() => navigate('/messages')} className="back-button">
-          Postez un message !
-        </button>
+        
       </div>
     </>
   );

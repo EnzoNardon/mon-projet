@@ -195,6 +195,16 @@ app.get('/posts/user/:userId', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/posts/:postId', verifyToken, async (req, res) => {
+  try {
+    const post = await postsManager.getPostById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post non trouvé" });
+    res.status(200).json(post);
+  } catch (e) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 app.delete('/posts/:postId', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const userId = req.user.userId; // Récupéré depuis le token

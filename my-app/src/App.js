@@ -5,6 +5,8 @@ import MyMessages from './components/MyMessages';
 import ValidationPage from './components/ValidationPage';
 import SignupPage from './components/SignupPage';
 import OpenForum from './components/OpenForum';
+import Message from './components/Message';
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
         <Route path="/validation" element={<ValidationPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/OpenForum" element={<OpenForum/>} />
+        <Route path="/message/:postId" element={<Message />} />
       </Routes>
     </Router>
   );

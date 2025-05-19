@@ -115,14 +115,25 @@ export default function MyMessages() {
   return (
     <>
       <div className="header-bar">
-        <Link to="/" className="header-icon">
-          🏠
-        </Link>
-        <Link to="/profil" className="header-icon">
-          👤
-        </Link>
+        <div className="header-left">
+          <span className="header-title">Organizz'Asso</span>
+        </div>
+        <div className="header-right">
+          <button className="logout-button" onClick={() => navigate('/openforum')}>
+          🌍 OpenForum
+        </button>
+        <button className="logout-button" onClick={() => navigate('/profil')}>
+          👤 Mon profil
+        </button>
+        <button className="logout-button" onClick={() => {
+          localStorage.clear();
+          navigate('/');
+        }}>
+          🚪 Déconnexion
+        </button>
+        </div>
       </div>
-
+      
       <div className="messages-container">
         <h2>📬 Mes Messages</h2>
 

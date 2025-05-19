@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Profil.css';
-import logo from '../logo.png';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -37,39 +36,46 @@ export default function ProfilePage() {
   if (!user) return <p>Chargement...</p>;
 
   return (
-    <>
-      <div className="header-bar">
-        <Link to="/OpenForum" className="header-icon">
-        🌍
-        </Link>
-        <Link to="/profil" className="header-icon active">
-          👤
-        </Link>
+  <>
+    <div className="header-bar">
+      <div className="header-left">
+        <span className="header-title">Organizz'Asso</span>
       </div>
 
-      <div className="profile-logo-container">
-        <img src={logo} alt="Profile Logo" className="profile-logo" />
+      <div className="header-right">
+        <button className="logout-button" onClick={() => navigate('/openforum')}>
+          🌍 OpenForum
+        </button>
+        <button className="logout-button" onClick={() => navigate('/profil')}>
+          👤 Mon profil
+        </button>
+        <button className="logout-button" onClick={() => {
+          localStorage.clear();
+          navigate('/');
+        }}>
+          🚪 Déconnexion
+        </button>
       </div>
+    </div>
 
-      <div className="profile-container">
-        <div className="profile-card">
-          <div className="profile-info">
-            <p><strong>Nom d'utilisateur:</strong> {user.login}</p>
-            <p><strong>Nom:</strong> {user.lastname}</p>
-            <p><strong>Prénom:</strong> {user.firstname}</p>
-          </div>
+    <div className="profile-container">
+      <div className="profile-card">
+        <div className="profile-info">
+          <p><strong>Nom d'utilisateur:</strong> {user.login}</p>
+          <p><strong>Nom:</strong> {user.lastname}</p>
+          <p><strong>Prénom:</strong> {user.firstname}</p>
         </div>
+      </div>
 
-        <div className="profile-buttons">
-          <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
-          <button onClick={() => navigate('/')}>🏠 Accueil</button>
-          {isAdmin && (
+      <div className="profile-buttons">
+        <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
+        {isAdmin && (
           <button onClick={() => navigate('/validation')} className="back-button">
             👑 Gérer les validations
           </button>
         )}
-        </div>
       </div>
-    </>
+    </div>
+  </>
   );
 }
