@@ -64,7 +64,6 @@ body {
   opacity: 0.8;
 }
 
-
 .header-icon {
   color: white;
   font-size: 24px;
@@ -132,6 +131,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: 5px;
 }
 
 .profile-buttons button:hover {
@@ -140,5 +140,6 @@ body {
 }
 
 .profile-buttons button:active {
+  opacity: 0.8;
   transform: translateY(0);
 }

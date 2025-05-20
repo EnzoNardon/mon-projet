@@ -39,7 +39,28 @@ export default function ValidationPage() {
     setPendingUsers(pendingUsers.filter(user => user._id !== userId));
   };
 
-  return (
+ return (
+  <>
+    <div className="header-bar">
+      <div className="header-left">
+        <span className="header-title">Organizz'Asso</span>
+      </div>
+      <div className="header-right">
+        <button className="logout-button" onClick={() => navigate('/openforum')}>
+          🌍 OpenForum
+        </button>
+        <button className="logout-button" onClick={() => navigate('/profil')}>
+          👤 Mon profil
+        </button>
+        <button className="logout-button" onClick={() => {
+          localStorage.clear();
+          navigate('/');
+        }}>
+          🚪 Déconnexion
+        </button>
+        </div>
+    </div>
+
     <div className="validation-container">
       <h2>👮 Valider les utilisateurs</h2>
 
@@ -58,9 +79,10 @@ export default function ValidationPage() {
         )
       )}
 
-      <button onClick={() => navigate('/profil')} className="back-button">
+      <button classname="back-button" onClick={() => navigate('/profil')} className="back-button">
         ⬅️ Retour au profil
       </button>
     </div>
+  </>
   );
 }
