@@ -7,14 +7,15 @@ class Posts {
     this.collection = this.db.collection("posts"); // Nouvelle collection "posts"
   }
 
-  async createPost(userId, login, content) {
+  async createPost(userId, login, content, parentId) {
     try {
       const newPost = {
         userId: new ObjectId(userId),
         login: login, // 👈 Ajout du login
         content: content,
         likes: [],
-        createdAt: new Date()
+        createdAt: new Date(),
+        parentId: typeof parentId === 'string' ? new ObjectId(parentId) : null
       };
   
       const result = await this.collection.insertOne(newPost);
@@ -42,6 +43,7 @@ class Posts {
       throw new Error("Erreur lors de la récupération de tous les posts");
     }
   }
+
   async getPostById(postId) {
     try {
       const post = await this.collection.findOne({ _id: new ObjectId(postId) });
@@ -69,6 +71,18 @@ class Posts {
       throw new Error("Erreur lors de la mise à jour du post");
     }
   }
+
+  async getRepliesByParentId(parentId) {
+  try {
+    return await this.collection
+      .find({ parentId: new ObjectId(parentId) })
+      .sort({ createdAt: 1 })
+      .toArray();
+  } catch (err) {
+    throw new Error("Erreur lors de la récupération des réponses : " + err.message);
+  }
+}
+
   
 }
 

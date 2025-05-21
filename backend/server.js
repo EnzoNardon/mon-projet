@@ -159,7 +159,7 @@ app.get('/Allposts', verifyToken, async (req, res) => {
 
 
 app.post('/posts', verifyToken, async (req, res) => {
-  const { content } = req.body;
+  const { content, parentId } = req.body;
 
   if (!content) {
     return res.status(400).json({ message: "Le contenu du post est vide." });
@@ -169,7 +169,7 @@ app.post('/posts', verifyToken, async (req, res) => {
     const userId = req.user.userId; // récupéré du token
     const login = req.user.login;   // 👈 récupéré aussi depuis le token
 
-    const postId = await postsManager.createPost(userId, login, content);
+    const postId = await postsManager.createPost(userId, login, content, parentId);
 
     res.status(201).json({ message: "Post créé ✅", postId });
   } catch (e) {
@@ -256,6 +256,16 @@ app.put('/posts/:postId', verifyToken, async (req, res) => {
   } catch (e) {
     console.error("Erreur dans /posts/:postId (PUT) :", e);
     res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get('/posts/replies/:parentId', verifyToken, async (req, res) => {
+  try {
+    const replies = await postsManager.getRepliesByParentId(req.params.parentId);
+    res.status(200).json(replies);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Erreur lors de la récupération des réponses" });
   }
 });
 

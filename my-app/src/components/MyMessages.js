@@ -50,7 +50,7 @@ export default function MyMessages() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: newPost }),
+        body: JSON.stringify({ content: newPost}),
       });
 
       if (res.ok) {

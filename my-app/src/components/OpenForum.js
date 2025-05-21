@@ -79,13 +79,16 @@ export default function OpenForum() {
       </div>
 
       <div className="openforum-container">
-        <input
-          type="text"
-          placeholder="Rechercher par contenu ou utilisateur..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="search-bar"
-        />
+        <div className="search-wrapper">
+            <input
+              type="text"
+              placeholder="Rechercher par contenu ou utilisateur..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="search-bar"
+            />
+            <button className="search-icon-button">🔍</button>
+        </div>
 
         <button onClick={() => navigate('/messages')} className="back-button">
           Postez un message !
@@ -106,8 +109,6 @@ export default function OpenForum() {
             </div>
           ))
         )}
-
-        
       </div>
     </>
   );
