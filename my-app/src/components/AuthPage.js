@@ -33,7 +33,7 @@ export default function AuthPage() {
         const payload = JSON.parse(atob(json.token.split('.')[1]));
         localStorage.setItem('role', payload.role);
 
-        navigate('/profil');
+        navigate('/openforum');
       } else {
         setLoginMessage(`❌ ${json.message || "Erreur de connexion"}`);
       }

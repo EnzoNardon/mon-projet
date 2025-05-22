@@ -12,6 +12,7 @@ export default function OpenForum() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    
     if (!token) {
       navigate('/');
       return;
@@ -86,7 +87,7 @@ export default function OpenForum() {
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>
-          <button className="logout-button" onClick={() => navigate('/profil')}>
+          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
             👤 Mon profil
           </button>
           <button className="logout-button" onClick={() => {

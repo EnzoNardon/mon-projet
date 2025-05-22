@@ -49,7 +49,7 @@ export default function ValidationPage() {
         <button className="logout-button" onClick={() => navigate('/openforum')}>
           🌍 OpenForum
         </button>
-        <button className="logout-button" onClick={() => navigate('/profil')}>
+        <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
           👤 Mon profil
         </button>
         <button className="logout-button" onClick={() => {
@@ -79,7 +79,7 @@ export default function ValidationPage() {
         )
       )}
 
-      <button classname="back-button" onClick={() => navigate('/profil')} className="back-button">
+      <button classname="back-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)} className="back-button">
         ⬅️ Retour au profil
       </button>
     </div>

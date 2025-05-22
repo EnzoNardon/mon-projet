@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Message.css';
 
 export default function Message() {
@@ -109,9 +110,15 @@ export default function Message() {
           <span className="header-title">Organizz'Asso</span>
         </div>
         <div className="header-right">
-          <button className="logout-button" onClick={() => navigate('/openforum')}>🌍 OpenForum</button>
-          <button className="logout-button" onClick={() => navigate('/profil')}>👤 Mon profil</button>
-          <button className="logout-button" onClick={() => { localStorage.clear(); navigate('/'); }}>🚪 Déconnexion</button>
+          <button className="logout-button" onClick={() => navigate('/openforum')}>
+            🌍 OpenForum
+          </button>
+          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+            👤 Mon profil
+          </button>
+          <button className="logout-button" onClick={() => { localStorage.clear(); navigate('/'); }}>
+            🚪 Déconnexion
+          </button>
         </div>
       </div>
 
@@ -119,8 +126,17 @@ export default function Message() {
         <div className="message-thread">
           <div className="openforum-card">
             <p>
-              <strong>{post.login}</strong> a écrit
-              {parentPost && <> en réponse à <strong>{parentPost.login}</strong></>}
+              <Link to={`/profil/${post.userId}`} className="poster-name">
+                <strong>{post.login}</strong>
+              </Link> a écrit
+              {parentPost && 
+                <> 
+                  {' '}en réponse à{' '}
+                  <Link to={`/profil/${parentPost.userId}`} className="poster-name">
+                    <strong>{parentPost.login}</strong>
+                  </Link>
+                </>
+              }
               :
             </p>
 

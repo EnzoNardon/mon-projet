@@ -269,6 +269,28 @@ app.get('/posts/replies/:parentId', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/public/profil/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await usersManager.get(req.params.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json(userWithoutPassword);
+  } catch (e) {
+    console.error("Erreur dans /public/profil/:id :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get('/public/posts/user/:userId', verifyToken, async (req, res) => {
+  try {
+    const posts = await postsManager.getPostsByUser(req.params.userId);
+    res.status(200).json(posts);
+  } catch (e) {
+    console.error("Erreur dans /public/posts/user/:userId :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 
 
 app.listen(port, () => console.log(`🚀 Le serveur écoute sur http://localhost:${port}`));

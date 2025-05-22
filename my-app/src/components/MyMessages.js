@@ -122,8 +122,8 @@ export default function MyMessages() {
           <button className="logout-button" onClick={() => navigate('/openforum')}>
           🌍 OpenForum
         </button>
-        <button className="logout-button" onClick={() => navigate('/profil')}>
-          👤 Mon profil
+        <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+            👤 Mon profil
         </button>
         <button className="logout-button" onClick={() => {
           localStorage.clear();
@@ -177,6 +177,9 @@ export default function MyMessages() {
                       {new Date(post.createdAt).toLocaleString('fr-FR')}
                     </span>
                     <div className="post-actions">
+                      <button onClick={() => navigate(`/message/${post._id}`)}>
+                        👁️ Voir les réponses
+                      </button>
                       <button onClick={() => {
                         setEditingPostId(post._id);
                         setEditingContent(post.content);
@@ -195,7 +198,7 @@ export default function MyMessages() {
         )}
 
         <div className="back-button-wrapper">
-          <Link to="/profil" className="full-width-back-button">
+          <Link to={`/profil/${localStorage.getItem('userId')}`} className="full-width-back-button">
             ⬅️ Retour au profil
           </Link>
         </div>

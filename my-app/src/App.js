@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AuthPage from './components/AuthPage';
-import Profil from './components/Profil';
 import MyMessages from './components/MyMessages';
 import ValidationPage from './components/ValidationPage';
 import SignupPage from './components/SignupPage';
 import OpenForum from './components/OpenForum';
 import Message from './components/Message';
+import UserProfile from './components/UserProfile';
 
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AuthPage />} />
-        <Route path="/profil" element={<Profil />} />
+        <Route path="/profil/:userId" element={<UserProfile />} />
         <Route path= "/messages" element={<MyMessages/>}/>
         <Route path="/validation" element={<ValidationPage />} />
         <Route path="/signup" element={<SignupPage />} />
