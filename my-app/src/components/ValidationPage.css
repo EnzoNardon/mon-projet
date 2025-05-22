@@ -137,3 +137,28 @@
   .back-button:active {
     opacity: 0.8;
   }
+
+.floating-create-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: black;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 60px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.floating-create-button:hover {
+  background-color: #222;
+  transform: scale(1.05);
+}

@@ -134,21 +134,24 @@ export default function MyMessages() {
         </div>
       </div>
       
-      <div className="messages-container">
-        <h2>📬 Mes Messages</h2>
+      <div className="messages-container-mm">
 
-        <form onSubmit={handlePostSubmit} className="create-post-form">
+        <h2>Mes Publications 📬</h2>
+
+        <form onSubmit={handlePostSubmit} className="create-post-form-mm">
           <textarea
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
-            placeholder="Quoi de neuf ?"
+            placeholder="Rédigez ici..."
             rows="4"
           />
           <button type="submit">Publier</button>
         </form>
 
         {posts.length === 0 ? (
-          <p>Pas encore de messages...</p>
+          <div className="empty-notification">
+            Pas encore de messages...
+          </div>
         ) : (
           <div className="posts-list">
             {posts.map(post => (
@@ -162,7 +165,7 @@ export default function MyMessages() {
                       onChange={(e) => setEditingContent(e.target.value)}
                       rows="3"
                     />
-                    <div className="edit-buttons">
+                    <div className="edit-buttons-mm">
                       <button onClick={saveEdit}>💾 Enregistrer</button>
                       <button onClick={() => setEditingPostId(null)}>❌ Annuler</button>
                     </div>
@@ -174,14 +177,14 @@ export default function MyMessages() {
                       {new Date(post.createdAt).toLocaleString('fr-FR')}
                     </span>
                     <div className="post-actions">
-                      <button onClick={() => confirmDeletePost(post._id)}>
-                        🗑️ Supprimer
-                      </button>
                       <button onClick={() => {
                         setEditingPostId(post._id);
                         setEditingContent(post.content);
                       }}>
                         ✏️ Modifier
+                      </button>
+                      <button onClick={() => confirmDeletePost(post._id)}>
+                        🗑️ Supprimer
                       </button>
                     </div>
                   </>
@@ -191,9 +194,11 @@ export default function MyMessages() {
           </div>
         )}
 
-        <Link to="/profil" className="back-button">
-          ⬅️ Retour au profil
-        </Link>
+        <div className="back-button-wrapper">
+          <Link to="/profil" className="full-width-back-button">
+            ⬅️ Retour au profil
+          </Link>
+        </div>
 
         {showModal && (
           <div className="modal-overlay">

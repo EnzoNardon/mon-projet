@@ -1,5 +1,5 @@
 /* Main container styles */
-.messages-container {
+.messages-container-mm {
   margin-top: 80px;
   padding: 20px;
   max-width: 800px;
@@ -40,7 +40,7 @@
 }
 
 /* Post form styles */
-.create-post-form {
+.create-post-form-mm {
   background-color: white;
   padding: 20px;
   border-radius: 10px;
@@ -48,8 +48,9 @@
   margin-bottom: 20px;
 }
 
-.create-post-form textarea {
+.create-post-form-mm textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -59,7 +60,7 @@
   margin-bottom: 12px;
 }
 
-.create-post-form button {
+.create-post-form-mm button {
   padding: 12px 24px;
   background-color: #000;
   color: white;
@@ -70,11 +71,11 @@
   transition: all 0.2s ease;
 }
 
-.create-post-form button:hover {
+.create-post-form-mm button:hover {
   opacity: 0.85;
 }
 
-.create-post-form button:active {
+.create-post-form-mm button:active {
   opacity: 0.7;
 }
 
@@ -107,22 +108,30 @@
   margin: 8px 0;
 }
 
-.post-actions, .edit-buttons {
+.post-actions, .edit-buttons-mm {
   display: flex;
   gap: 10px;
   margin-top: 12px;
 }
 
-.post-actions button, .edit-buttons button {
+.post-actions button, .edit-buttons-mm button {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: black;
+  color: white;
 }
 
-.post-actions button:hover, .edit-buttons button:hover {
+.edit-buttons-mm button:last-child {
+  background-color: #e74c3c; /* red */
+  color: white;
+}
+
+
+.post-actions button:hover, .edit-buttons-mm button:hover {
   opacity: 0.9;
 }
 
@@ -134,13 +143,14 @@
 
 /* Edit button specific style */
 .post-actions button:last-child {
-  background-color: #3498db;
+  background-color: black;
   color: white;
 }
 
 /* Edit form styles */
 .post-card textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -181,6 +191,14 @@
   gap: 20px;
 }
 
+button:hover {
+  opacity: 0.85;
+}
+
+button:active {
+  opacity: 0.7;
+}
+
 .modal-buttons button {
   padding: 10px 20px;
   font-size: 16px;
@@ -200,25 +218,91 @@
   color: white;
 }
 
-/* Back button */
-.back-button {
+.back-button-wrapper {
+  max-width: 600px;
+  margin: 40px auto 20px auto;
+  width: 100%;
+}
+
+.full-width-back-button {
   display: block;
-  margin-top: 20px;
-  padding: 12px;
+  width: 100%;
+  padding: 16px 0;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.full-width-back-button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.full-width-back-button:active {
+  transform: translateY(0);
+  opacity: 0.7;
+}
+
+
+.back-button {
+  display: inline-block;
+  padding: 10px 20px;
   background-color: #000;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   text-align: center;
   text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .back-button:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .back-button:active {
   opacity: 0.7;
+}
+
+.floating-create-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: black;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 60px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+.floating-create-button:hover {
+  background-color: #222;
+  transform: scale(1.05);
+}
+
+.empty-notification {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+  text-align: center;
 }

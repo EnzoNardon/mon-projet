@@ -71,7 +71,7 @@ export default function ValidationPage() {
           pendingUsers.map(user => (
             <div key={user._id} className="user-card">
               <p>{user.login} - {user.firstname} {user.lastname}</p>
-              <button onClick={() => validateUser(user._id)}>✅ Valider</button>
+              <button onClick={() => validateUser(user._id)}>✅ Valider l'inscription</button>
             </div>
           ))
         ) : (
@@ -83,6 +83,10 @@ export default function ValidationPage() {
         ⬅️ Retour au profil
       </button>
     </div>
+
+    <button className="floating-create-button" onClick={() => navigate('/messages')}>
+      +
+    </button>
   </>
   );
 }

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import './Profil.css';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,9 +33,22 @@ export default function ProfilePage() {
       .catch(() => {
         navigate('/');
       });
+
+    fetch(`http://localhost:3000/posts/user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => setPosts(data))
+      .catch(err => console.error('Erreur récupération des posts :', err));
+
   }, [navigate]);
 
   if (!user) return <p>Chargement...</p>;
+
+  const totalMessages = posts.length;
+  const totalLikes = posts.reduce((sum, post) => sum + (post.likes?.length || 0), 0);
 
   return (
   <>
@@ -59,23 +74,28 @@ export default function ProfilePage() {
     </div>
 
     <div className="profile-container">
+
       <div className="profile-card">
-        <div className="profile-info">
-          <p><strong>Nom d'utilisateur:</strong> {user.login}</p>
-          <p><strong>Nom:</strong> {user.lastname}</p>
-          <p><strong>Prénom:</strong> {user.firstname}</p>
-        </div>
+        <h2 className="profile-username">@{user.login}</h2>
+        <div className="profile-detail"><strong>Nom :</strong> {user.lastname}</div>
+        <div className="profile-detail"><strong>Prénom :</strong> {user.firstname}</div>
+        <div className="profile-detail"><strong>Messages publiés :</strong> {totalMessages}</div>
+        <div className="profile-detail"><strong>Likes reçus :</strong> {totalLikes}</div>
       </div>
 
       <div className="profile-buttons">
-        <button onClick={() => navigate('/messages')}>📬 Mes messages</button>
+        <button onClick={() => navigate('/messages')}>Accéder à mes publications 📬</button>
         {isAdmin && (
           <button onClick={() => navigate('/validation')} className="back-button">
-            👑 Gérer les validations
+            Gérer les validations 👑 
           </button>
         )}
       </div>
     </div>
+
+    <button className="floating-create-button" onClick={() => navigate('/messages')}>
+      +
+    </button>
   </>
   );
 }

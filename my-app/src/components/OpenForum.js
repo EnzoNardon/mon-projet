@@ -7,11 +7,11 @@ export default function OpenForum() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [parentLogins, setParentLogins] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log("Token: ", token);
     if (!token) {
       navigate('/');
       return;
@@ -23,10 +23,30 @@ export default function OpenForum() {
       },
     })
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         setPosts(data);
         setFilteredPosts(data);
         setLoading(false);
+
+        // ✅ Pour chaque post avec parentId, on va chercher le login du parent
+        const replies = data.filter(post => post.parentId);
+        const parentLoginMap = {};
+
+        await Promise.all(replies.map(async (reply) => {
+          try {
+            const res = await fetch(`http://localhost:3000/posts/${reply.parentId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+              const parentPost = await res.json();
+              parentLoginMap[reply._id] = parentPost.login;
+            }
+          } catch (err) {
+            console.error(`Erreur récupération du parent pour ${reply._id}`, err);
+          }
+        }));
+
+        setParentLogins(parentLoginMap);
       })
       .catch(err => {
         console.error(err);
@@ -78,16 +98,16 @@ export default function OpenForum() {
         </div>
       </div>
 
-      <div className="openforum-container">
+      <div className="openforum-container-only-of">
         <div className="search-wrapper">
-            <input
-              type="text"
-              placeholder="Rechercher par contenu ou utilisateur..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="search-bar"
-            />
-            <button className="search-icon-button">🔍</button>
+          <input
+            type="text"
+            placeholder="Rechercher par contenu ou utilisateur..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="search-bar"
+          />
+          <button className="search-icon-button">🔍</button>
         </div>
 
         <button onClick={() => navigate('/messages')} className="back-button">
@@ -98,10 +118,19 @@ export default function OpenForum() {
           <p>Aucun message trouvé.</p>
         ) : (
           filteredPosts.map(post => (
-            <div key={post._id} className="openforum-card" 
-            onClick={() => navigate(`/message/${post._id}`)}
-            style={{ cursor: 'pointer' }}>
-              <p><strong>{post.login}</strong> a écrit :</p>
+            <div
+              key={post._id}
+              className="openforum-card-only-of"
+              onClick={() => navigate(`/message/${post._id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <p>
+                <strong>{post.login}</strong> a écrit
+                {post.parentId && parentLogins[post._id] && (
+                  <> en réponse à <strong>{parentLogins[post._id]}</strong></>
+                )}
+                :
+              </p>
               <p>{post.content}</p>
               <div className="post-date">
                 {post.createdAt ? new Date(post.createdAt).toLocaleString('fr-FR') : 'Date inconnue'}
@@ -110,6 +139,10 @@ export default function OpenForum() {
           ))
         )}
       </div>
+
+      <button className="floating-create-button" onClick={() => navigate('/messages')}>
+        +
+      </button>
     </>
   );
 }

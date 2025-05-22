@@ -55,9 +55,22 @@ class Posts {
   
   async deletePost(postId) {
     try {
-      await this.collection.deleteOne({ _id: new ObjectId(postId) });
+      const postObjectId = new ObjectId(postId);
+
+      await this.deleteRepliesRecursive(postObjectId);
+      await this.collection.deleteOne({ _id: postObjectId });
+
     } catch (e) {
-      throw new Error("Erreur lors de la suppression du post");
+      throw new Error("Erreur lors de la suppression du post : " + e.message);
+    }
+  }
+
+  async deleteRepliesRecursive(parentId) {
+    const replies = await this.collection.find({ parentId }).toArray();
+
+    for (const reply of replies) {
+      await this.deleteRepliesRecursive(reply._id); 
+      await this.collection.deleteOne({ _id: reply._id });
     }
   }
   
