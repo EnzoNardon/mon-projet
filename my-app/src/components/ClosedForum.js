@@ -1,10 +1,10 @@
-// ✅ OpenForum.js — version complète avec bouton ClosedForum pour admin uniquement
+// ✅ ClosedForum.js — construit à partir de ValidationPage.js + OpenForum.js (filtrage local)
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OpenForum.css';
 
-export default function OpenForum() {
+export default function ClosedForum() {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,54 +13,49 @@ export default function OpenForum() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
 
-  if (!token) {
-    navigate('/');
-    return;
-  }
-
-  fetch('http://localhost:3000/Allposts', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then(res => res.json())
-    .then(async data => {
-      // ❌ Her zaman closed mesajları filtrele
-      const visiblePosts = data.filter(
-        post => post.visibility === 'open' || post.visibility === 'both'
-      );
-
-      setPosts(visiblePosts);
-      setFilteredPosts(visiblePosts);
-      setLoading(false);
-
-      const replies = visiblePosts.filter(post => post.parentId);
-      const parentLoginMap = {};
-
-      await Promise.all(replies.map(async (reply) => {
-        try {
-          const res = await fetch(`http://localhost:3000/posts/${reply.parentId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const parentPost = await res.json();
-            parentLoginMap[reply._id] = parentPost.login;
-          }
-        } catch (err) {
-          console.error(`Erreur récupération du parent pour ${reply._id}`, err);
-        }
-      }));
-
-      setParentLogins(parentLoginMap);
-    })
-    .catch(err => {
-      console.error(err);
+    if (!token || role !== 'admin') {
       navigate('/');
-    });
-}, [navigate]);
+      return;
+    }
 
+    fetch('http://localhost:3000/Allposts', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        const visible = data.filter(post => post.visibility === 'closed' || post.visibility === 'both');
+
+        setPosts(visible);
+        setFilteredPosts(visible);
+
+        const replies = visible.filter(post => post.parentId);
+        const parentLoginMap = {};
+
+        Promise.all(replies.map(async (reply) => {
+          try {
+            const res = await fetch(`http://localhost:3000/posts/${reply.parentId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+              const parentPost = await res.json();
+              parentLoginMap[reply._id] = parentPost.login;
+            }
+          } catch (err) {
+            console.error(`Erreur récupération du parent pour ${reply._id}`, err);
+          }
+        })).then(() => {
+          setParentLogins(parentLoginMap);
+          setLoading(false);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        navigate('/');
+      });
+  }, [navigate]);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -75,13 +70,10 @@ export default function OpenForum() {
     setFilteredPosts(filtered);
   };
 
-  const role = localStorage.getItem('role');
-  const userId = localStorage.getItem('userId');
-
   if (loading) {
     return (
       <div className="openforum-container">
-        <p>Chargement du forum...</p>
+        <p>Chargement du forum privé...</p>
       </div>
     );
   }
@@ -90,20 +82,17 @@ export default function OpenForum() {
     <>
       <div className="header-bar">
         <div className="header-left">
-          <span className="header-title">Organizz'Asso - OpenForum 🌍</span>
+          <span className="header-title">Organizz'Asso - ClosedForum 🔒</span>
         </div>
 
         <div className="header-right">
-          {role === 'admin' && (
-            <button className="logout-button" onClick={() => navigate('/closedforum')}>
-              🔒 ClosedForum
-            </button>
-          )}
-
+          <button className="logout-button" onClick={() => navigate('/closedforum')}>
+            🔒 ClosedForum
+          </button>
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>
-          <button className="logout-button" onClick={() => navigate(`/profil/${userId}`)}>
+          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
             👤 Mon profil
           </button>
           <button className="logout-button" onClick={() => {
@@ -128,11 +117,11 @@ export default function OpenForum() {
         </div>
 
         <button onClick={() => navigate('/messages')} className="back-button">
-          Postez un message !
+          Postez un message privé !
         </button>
 
         {filteredPosts.length === 0 ? (
-          <p>Aucun message trouvé.</p>
+          <p>Aucun message privé trouvé.</p>
         ) : (
           filteredPosts.map(post => (
             <div

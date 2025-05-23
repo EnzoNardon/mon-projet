@@ -7,6 +7,10 @@ export default function ValidationPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // 🔐 Rol kontrolü (admin mi?)
+  const role = localStorage.getItem('role');
+  const isAdmin = role === 'admin';
+
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -15,7 +19,6 @@ export default function ValidationPage() {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('🛠️ Données reçues :', data);
         if (Array.isArray(data)) {
           setPendingUsers(data);
           setError('');
@@ -39,54 +42,71 @@ export default function ValidationPage() {
     setPendingUsers(pendingUsers.filter(user => user._id !== userId));
   };
 
- return (
-  <>
-    <div className="header-bar">
-      <div className="header-left">
-        <span className="header-title">Organizz'Asso</span>
-      </div>
-      <div className="header-right">
-        <button className="logout-button" onClick={() => navigate('/openforum')}>
-          🌍 OpenForum
-        </button>
-        <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
-          👤 Mon profil
-        </button>
-        <button className="logout-button" onClick={() => {
-          localStorage.clear();
-          navigate('/');
-        }}>
-          🚪 Déconnexion
-        </button>
+  return (
+    <>
+      <div className="header-bar">
+        <div className="header-left">
+          <span className="header-title">Organizz'Asso</span>
         </div>
-    </div>
 
-    <div className="validation-container">
-      <h2>👮 Valider les utilisateurs</h2>
+        <div className="header-right">
+          {isAdmin && (
+            <button className="logout-button" onClick={() => navigate('/closedforum')}>
+              🔒 ClosedForum
+            </button>
+          )}
+          <button className="logout-button" onClick={() => navigate('/openforum')}>
+            🌍 OpenForum
+          </button>
+          <button
+            className="logout-button"
+            onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}
+          >
+            👤 Mon profil
+          </button>
+          <button
+            className="logout-button"
+            onClick={() => {
+              localStorage.clear();
+              navigate('/');
+            }}
+          >
+            🚪 Déconnexion
+          </button>
+        </div>
+      </div>
 
-      {error ? (
-        <p className="error-message">❌ {error}</p>
-      ) : (
-        pendingUsers.length > 0 ? (
-          pendingUsers.map(user => (
-            <div key={user._id} className="user-card">
-              <p>{user.login} - {user.firstname} {user.lastname}</p>
-              <button onClick={() => validateUser(user._id)}>✅ Valider l'inscription</button>
-            </div>
-          ))
+      <div className="validation-container">
+        <h2>👮 Valider les utilisateurs</h2>
+
+        {error ? (
+          <p className="error-message">❌ {error}</p>
         ) : (
-          <p>Aucun utilisateur à valider.</p>
-        )
-      )}
+          pendingUsers.length > 0 ? (
+            pendingUsers.map(user => (
+              <div key={user._id} className="user-card">
+                <p>{user.login} - {user.firstname} {user.lastname}</p>
+                <button onClick={() => validateUser(user._id)}>
+                  ✅ Valider l'inscription
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>Aucun utilisateur à valider.</p>
+          )
+        )}
 
-      <button classname="back-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)} className="back-button">
-        ⬅️ Retour au profil
+        <button
+          className="back-button"
+          onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}
+        >
+          ⬅️ Retour au profil
+        </button>
+      </div>
+
+      <button className="floating-create-button" onClick={() => navigate('/messages')}>
+        +
       </button>
-    </div>
-
-    <button className="floating-create-button" onClick={() => navigate('/messages')}>
-      +
-    </button>
-  </>
+    </>
   );
 }

@@ -6,6 +6,8 @@ import SignupPage from './components/SignupPage';
 import OpenForum from './components/OpenForum';
 import Message from './components/Message';
 import UserProfile from './components/UserProfile';
+import ClosedForum from './components/ClosedForum';
+
 
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/OpenForum" element={<OpenForum/>} />
         <Route path="/message/:postId" element={<Message />} />
+        <Route path="/closedforum" element={<ClosedForum />} />
       </Routes>
     </Router>
   );

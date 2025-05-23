@@ -14,8 +14,6 @@ const verifyToken = require('./Middlewares/authMiddleware');
 require('dotenv').config();
 
 
-
-
 app.use(cors());
 app.use(express.json());
 
@@ -159,7 +157,7 @@ app.get('/Allposts', verifyToken, async (req, res) => {
 
 
 app.post('/posts', verifyToken, async (req, res) => {
-  const { content, parentId } = req.body;
+  const { content, parentId, visibility } = req.body;
 
   if (!content) {
     return res.status(400).json({ message: "Le contenu du post est vide." });
@@ -169,7 +167,7 @@ app.post('/posts', verifyToken, async (req, res) => {
     const userId = req.user.userId; // récupéré du token
     const login = req.user.login;   // 👈 récupéré aussi depuis le token
 
-    const postId = await postsManager.createPost(userId, login, content, parentId);
+    const postId = await postsManager.createPost(userId, login, content, parentId, visibility || 'open');
 
     res.status(201).json({ message: "Post créé ✅", postId });
   } catch (e) {
@@ -289,6 +287,34 @@ app.get('/public/posts/user/:userId', verifyToken, async (req, res) => {
   } catch (e) {
     console.error("Erreur dans /public/posts/user/:userId :", e);
     res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// ✅ OpenForum : messages publics (ou les deux)
+app.get('/posts/open', verifyToken, async (req, res) => {
+  try {
+    const posts = await postsManager.getVisiblePosts('open');
+    res.status(200).json(posts);
+  } catch (e) {
+    console.error("Erreur dans /posts/open :", e);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get('/posts/closed', verifyToken, async (req, res) => {
+  console.log("🔐 Accès à /posts/closed par :", req.user);
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Accès interdit (admin uniquement)" });
+  }
+
+  try {
+    const posts = await postsManager.getVisiblePosts('closed');
+    console.log("📦 Posts fermés trouvés :", posts.length);
+    res.status(200).json(posts);
+  } catch (e) {
+    console.error("❌ ERREUR dans /posts/closed :", e.message, e.stack);
+    res.status(500).json({ message: "Erreur serveur (closed)" });
   }
 });
 

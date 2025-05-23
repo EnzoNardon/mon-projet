@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import './Message.css';
 
 export default function Message() {
@@ -16,6 +15,7 @@ export default function Message() {
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,7 +29,13 @@ export default function Message() {
     })
       .then(res => res.json())
       .then(data => {
+        if (data.visibility === 'closed' && role !== 'admin') {
+          navigate('/openforum');
+          return;
+        }
+
         setPost(data);
+
         if (data.parentId) {
           fetch(`http://localhost:3000/posts/${data.parentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -39,14 +45,14 @@ export default function Message() {
         }
       })
       .catch(() => navigate('/openforum'));
-  }, [postId, navigate, token]);
+  }, [postId, navigate, token, role]);
 
   const fetchReplies = useCallback(() => {
     fetch(`http://localhost:3000/posts/replies/${postId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
-      .then(data => setReplies(data));
+      .then(data => Array.isArray(data) ? setReplies(data) : setReplies([]));
   }, [postId, token]);
 
   useEffect(() => {
@@ -110,13 +116,21 @@ export default function Message() {
           <span className="header-title">Organizz'Asso</span>
         </div>
         <div className="header-right">
+          {role === 'admin' && (
+            <button className="logout-button" onClick={() => navigate('/closedforum')}>
+              🔒 ClosedForum
+            </button>
+          )}
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>
-          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+          <button className="logout-button" onClick={() => navigate(`/profil/${userId}`)}>
             👤 Mon profil
           </button>
-          <button className="logout-button" onClick={() => { localStorage.clear(); navigate('/'); }}>
+          <button className="logout-button" onClick={() => {
+            localStorage.clear();
+            navigate('/');
+          }}>
             🚪 Déconnexion
           </button>
         </div>
@@ -129,8 +143,8 @@ export default function Message() {
               <Link to={`/profil/${post.userId}`} className="poster-name">
                 <strong>{post.login}</strong>
               </Link> a écrit
-              {parentPost && 
-                <> 
+              {parentPost &&
+                <>
                   {' '}en réponse à{' '}
                   <Link to={`/profil/${parentPost.userId}`} className="poster-name">
                     <strong>{parentPost.login}</strong>
@@ -156,9 +170,7 @@ export default function Message() {
             ) : (
               <>
                 <p>{post.content}</p>
-                <span className="post-date">
-                      {new Date(post.createdAt).toLocaleString('fr-FR')}
-                </span>
+                <span className="post-date">{new Date(post.createdAt).toLocaleString('fr-FR')}</span>
                 {post.userId === userId && (
                   <div className="post-actions">
                     <button onClick={() => setEditing(true)}>✏️ Modifier</button>
@@ -226,6 +238,7 @@ export default function Message() {
           </div>
         </div>
       )}
+
       <button className="floating-create-button" onClick={() => navigate('/messages')}>
         +
       </button>

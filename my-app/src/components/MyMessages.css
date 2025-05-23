@@ -311,3 +311,21 @@ button:active {
   color: #666;
   text-align: center;
 }
+
+.create-post-form-mm select {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.create-post-form-mm select:focus {
+  border-color: #000;
+  outline: none;
+  background-color: #fff;
+}

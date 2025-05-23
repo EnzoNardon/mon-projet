@@ -40,7 +40,13 @@ export default function UserProfile() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
-      .then(data => setPosts(data))
+      .then(data => {
+        const role = localStorage.getItem('role');
+        const visiblePosts = role === 'admin'
+          ? data
+          : data.filter(post => post.visibility !== 'closed');
+        setPosts(visiblePosts);
+      })
       .catch(err => console.error('Erreur récupération des posts :', err));
   }, [userId, navigate]);
 
@@ -57,6 +63,11 @@ export default function UserProfile() {
         </div>
 
         <div className="header-right">
+          {isAdmin && (
+            <button className="logout-button" onClick={() => navigate('/closedforum')}>
+              🔒 ClosedForum
+            </button>
+          )}
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>

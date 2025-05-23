@@ -198,6 +198,7 @@ body {
 }
 
 .user-messages h3 {
+  margin-top: 20px;
   margin-bottom: 20px;
   text-align: center;
   font-size: 20px;

@@ -9,11 +9,16 @@ export default function MyMessages() {
   const [showModal, setShowModal] = useState(false);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+  const [visibility, setVisibility] = useState('open');
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const navigate = useNavigate();
 
   const fetchPosts = useCallback(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    const role = localStorage.getItem('role');
+    setIsAdmin(role === 'admin');
 
     if (!token || !userId) {
       navigate('/');
@@ -50,11 +55,15 @@ export default function MyMessages() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: newPost}),
+        body: JSON.stringify({
+          content: newPost,
+          visibility: isAdmin ? visibility : 'open',
+        }),
       });
 
       if (res.ok) {
         setNewPost('');
+        setVisibility('open');
         fetchPosts();
       }
     } catch (err) {
@@ -119,23 +128,27 @@ export default function MyMessages() {
           <span className="header-title">Organizz'Asso</span>
         </div>
         <div className="header-right">
+          {isAdmin && (
+            <button className="logout-button" onClick={() => navigate('/closedforum')}>
+              🔒 ClosedForum
+            </button>
+          )}
           <button className="logout-button" onClick={() => navigate('/openforum')}>
-          🌍 OpenForum
-        </button>
-        <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+            🌍 OpenForum
+          </button>
+          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
             👤 Mon profil
-        </button>
-        <button className="logout-button" onClick={() => {
-          localStorage.clear();
-          navigate('/');
-        }}>
-          🚪 Déconnexion
-        </button>
+          </button>
+          <button className="logout-button" onClick={() => {
+            localStorage.clear();
+            navigate('/');
+          }}>
+            🚪 Déconnexion
+          </button>
         </div>
       </div>
-      
-      <div className="messages-container-mm">
 
+      <div className="messages-container-mm">
         <h2>Mes Publications 📬</h2>
 
         <form onSubmit={handlePostSubmit} className="create-post-form-mm">
@@ -145,13 +158,18 @@ export default function MyMessages() {
             placeholder="Rédigez ici..."
             rows="4"
           />
+          {isAdmin && (
+            <select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+              <option value="open">Forum public</option>
+              <option value="closed">Forum fermé (admin)</option>
+              <option value="both">Les deux</option>
+            </select>
+          )}
           <button type="submit">Publier</button>
         </form>
 
         {posts.length === 0 ? (
-          <div className="empty-notification">
-            Pas encore de messages...
-          </div>
+          <div className="empty-notification">Pas encore de messages...</div>
         ) : (
           <div className="posts-list">
             {posts.map(post => (
@@ -177,18 +195,12 @@ export default function MyMessages() {
                       {new Date(post.createdAt).toLocaleString('fr-FR')}
                     </span>
                     <div className="post-actions">
-                      <button onClick={() => navigate(`/message/${post._id}`)}>
-                        👁️ Voir les réponses
-                      </button>
+                      <button onClick={() => navigate(`/message/${post._id}`)}>👁️ Voir les réponses</button>
                       <button onClick={() => {
                         setEditingPostId(post._id);
                         setEditingContent(post.content);
-                      }}>
-                        ✏️ Modifier
-                      </button>
-                      <button onClick={() => confirmDeletePost(post._id)}>
-                        🗑️ Supprimer
-                      </button>
+                      }}>✏️ Modifier</button>
+                      <button onClick={() => confirmDeletePost(post._id)}>🗑️ Supprimer</button>
                     </div>
                   </>
                 )}
