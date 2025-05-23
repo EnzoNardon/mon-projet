@@ -28,9 +28,7 @@ export default function OpenForum() {
     .then(res => res.json())
     .then(async data => {
       // ❌ Her zaman closed mesajları filtrele
-      const visiblePosts = data.filter(
-        post => post.visibility === 'open' || post.visibility === 'both'
-      );
+      const visiblePosts = data.filter(post => post.visibility === 'open');
 
       setPosts(visiblePosts);
       setFilteredPosts(visiblePosts);

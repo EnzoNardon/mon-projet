@@ -24,6 +24,8 @@ export default function Message() {
       return;
     }
 
+    setParentPost(null);
+
     fetch(`http://localhost:3000/posts/${postId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -107,7 +109,21 @@ export default function Message() {
     setPost(updated);
   };
 
+  const handleLike = async () => {
+    await fetch(`http://localhost:3000/posts/${post._id}/like`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const res = await fetch(`http://localhost:3000/posts/${post._id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const updated = await res.json();
+    setPost(updated);
+  };
+
   if (!post) return <p>Chargement...</p>;
+
+  const isLiked = post.likes?.includes(userId);
 
   return (
     <>
@@ -138,17 +154,17 @@ export default function Message() {
 
       <div className="openforum-container">
         <div className="message-thread">
-          <div className="openforum-card">
+          <div className={`openforum-card ${post.visibility === 'closed' ? 'closed-post' : ''}`}>
             <p>
               <Link to={`/profil/${post.userId}`} className="poster-name">
                 <strong>{post.login}</strong>
               </Link> a écrit
               {parentPost &&
                 <>
-                  {' '}en réponse à{' '}
-                  <Link to={`/profil/${parentPost.userId}`} className="poster-name">
-                    <strong>{parentPost.login}</strong>
-                  </Link>
+                  {' '}en réponse au {' '}
+                  <span onClick={() => navigate(`/message/${parentPost._id}`)} className="poster-name">
+                    message de <strong>{parentPost.login}</strong>
+                  </span>
                 </>
               }
               :
@@ -170,13 +186,21 @@ export default function Message() {
             ) : (
               <>
                 <p>{post.content}</p>
-                <span className="post-date">{new Date(post.createdAt).toLocaleString('fr-FR')}</span>
-                {post.userId === userId && (
-                  <div className="post-actions">
-                    <button onClick={() => setEditing(true)}>✏️ Modifier</button>
-                    <button onClick={() => setShowModal(true)}>🗑️ Supprimer</button>
-                  </div>
-                )}
+                <span className="post-date">{new Date(post.createdAt).toLocaleString('fr-FR')}
+                  <br />
+                  ❤️ {post.likes?.length || 0} like(s)
+                </span>
+                <div className="post-actions">
+                  <button onClick={handleLike}>
+                    {isLiked ? '💔 Unlike' : '❤️ Like'}
+                  </button>
+                  {post.userId === userId && (
+                    <>
+                      <button onClick={() => setEditing(true)}>✏️ Modifier</button>
+                      <button onClick={() => setShowModal(true)}>🗑️ Supprimer</button>
+                    </>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -212,7 +236,7 @@ export default function Message() {
               {replies.map(reply => (
                 <div
                   key={reply._id}
-                  className="openforum-card reply-card"
+                  className={`openforum-card reply-card ${reply.visibility === 'closed' ? 'closed-post' : ''}`}
                   onClick={() => navigate(`/message/${reply._id}`)}
                   style={{ cursor: 'pointer' }}
                 >

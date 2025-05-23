@@ -157,17 +157,28 @@ app.get('/Allposts', verifyToken, async (req, res) => {
 
 
 app.post('/posts', verifyToken, async (req, res) => {
-  const { content, parentId, visibility } = req.body;
+  const { content, parentId } = req.body;
 
   if (!content) {
     return res.status(400).json({ message: "Le contenu du post est vide." });
   }
 
   try {
-    const userId = req.user.userId; // récupéré du token
-    const login = req.user.login;   // 👈 récupéré aussi depuis le token
+    const userId = req.user.userId;
+    const login = req.user.login;
 
-    const postId = await postsManager.createPost(userId, login, content, parentId, visibility || 'open');
+    let finalVisibility = 'open';
+
+    if (parentId) {
+      const parentPost = await postsManager.getPostById(parentId);
+      if (!parentPost) return res.status(404).json({ message: "Message parent introuvable" });
+
+      finalVisibility = parentPost.visibility;
+    } else {
+      finalVisibility = req.body.visibility || 'open';
+    }
+
+    const postId = await postsManager.createPost(userId, login, content, parentId, finalVisibility);
 
     res.status(201).json({ message: "Post créé ✅", postId });
   } catch (e) {
@@ -175,6 +186,7 @@ app.post('/posts', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 
 
 app.get('/posts/user/:userId', verifyToken, async (req, res) => {
@@ -302,21 +314,144 @@ app.get('/posts/open', verifyToken, async (req, res) => {
 });
 
 app.get('/posts/closed', verifyToken, async (req, res) => {
-  console.log("🔐 Accès à /posts/closed par :", req.user);
-
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: "Accès interdit (admin uniquement)" });
   }
 
   try {
     const posts = await postsManager.getVisiblePosts('closed');
-    console.log("📦 Posts fermés trouvés :", posts.length);
     res.status(200).json(posts);
   } catch (e) {
-    console.error("❌ ERREUR dans /posts/closed :", e.message, e.stack);
+    console.error("ERREUR dans /posts/closed :", e.message, e.stack);
     res.status(500).json({ message: "Erreur serveur (closed)" });
   }
 });
+
+app.post('/users/request-admin', verifyToken, async (req, res) => {
+  const userId = req.user.userId;
+
+  try {
+    await usersManager.requestAdmin(userId);
+    res.status(200).json({ message: "Demande envoyée avec succès." });
+  } catch (e) {
+    console.error("Erreur /users/request-admin :", e.message);
+    res.status(400).json({ message: e.message });
+  }
+});
+
+app.get('/users/admin-requests', verifyToken, async (req, res) => {
+  try {
+    const role = req.user.role;
+    if (role !== 'admin') {
+      return res.status(403).json({ message: "Accès interdit" });
+    }
+
+    const requests = await usersManager.getAdminRequests();
+    res.status(200).json(requests);
+  } catch (e) {
+    console.error("Erreur /admin-requests :", e.message);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.put('/users/grant-admin/:userId', verifyToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Accès interdit" });
+  }
+
+  try {
+    await usersManager.grantAdmin(req.params.userId);
+    res.status(200).json({ message: "Utilisateur promu en admin." });
+  } catch (e) {
+    console.error("Erreur /grant-admin :", e.message);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+app.put('/users/deny-admin/:userId', verifyToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Accès interdit" });
+  }
+
+  try {
+    await usersManager.denyAdminRequest(req.params.userId);
+    res.status(200).json({ message: "Demande refusée." });
+  } catch (e) {
+    console.error("Erreur /deny-admin :", e.message);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+app.put('/users/revoke-admin/:userId', verifyToken, async (req, res) => {
+  const requesterId = req.user.userId;
+  const targetId = req.params.userId;
+
+  if (requesterId === targetId) {
+    return res.status(400).json({ message: "Kendi adminliğini kaldıramazsın." });
+  }
+
+  const requesterRole = req.user.role;
+  if (requesterRole !== 'admin') {
+    return res.status(403).json({ message: "Yetkisiz işlem." });
+  }
+
+  try {
+    await usersManager.revokeAdmin(targetId);
+    res.status(200).json({ message: "Admin rolü kaldırıldı." });
+  } catch (e) {
+    console.error("Erreur /revoke-admin:", e.message);
+    res.status(500).json({ message: "Sunucu hatası." });
+  }
+});
+
+app.get('/users/admins', verifyToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Accès interdit' });
+  }
+
+  try {
+    const admins = await usersManager.getAdmins();
+    res.status(200).json(admins);
+  } catch (e) {
+    console.error('Erreur /users/admins:', e.message);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.put('/users/revoke-admin/:userId', verifyToken, async (req, res) => {
+  const requesterId = req.user.userId;
+  const targetId = req.params.userId;
+
+  if (requesterId === targetId) {
+    return res.status(400).json({ message: "Tu ne peux pas retirer ton propre rôle." });
+  }
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Accès interdit' });
+  }
+
+  try {
+    await usersManager.revokeAdmin(targetId);
+    res.status(200).json({ message: 'Rôle admin retiré.' });
+  } catch (e) {
+    console.error('Erreur /users/revoke-admin:', e.message);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.post('/posts/:postId/like', verifyToken, async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const userId = req.user.userId;
+
+    const liked = await postsManager.toggleLike(postId, userId);
+    res.status(200).json({ liked });
+  } catch (e) {
+    console.error("Erreur /posts/:postId/like:", e.message);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 
 
 app.listen(port, () => console.log(`🚀 Le serveur écoute sur http://localhost:${port}`));

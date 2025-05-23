@@ -227,3 +227,7 @@ body {
 .openforum-card-reply:active {
   opacity: 0.3;
 }
+
+.closed-post {
+  border: 2px solid #d4af37 !important;
+}

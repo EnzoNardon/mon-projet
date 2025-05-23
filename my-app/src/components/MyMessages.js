@@ -159,10 +159,13 @@ export default function MyMessages() {
             rows="4"
           />
           {isAdmin && (
-            <select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+            <select
+              className={visibility === 'closed' ? 'select-closed' : 'select-open'}
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+            >
               <option value="open">Forum public</option>
               <option value="closed">Forum fermé (admin)</option>
-              <option value="both">Les deux</option>
             </select>
           )}
           <button type="submit">Publier</button>
@@ -173,7 +176,7 @@ export default function MyMessages() {
         ) : (
           <div className="posts-list">
             {posts.map(post => (
-              <div key={post._id} className="post-card">
+              <div key={post._id} className={`post-card ${post.visibility === 'closed' ? 'closed-post' : ''}`}>
                 <p><strong>{post.login}</strong> a écrit :</p>
 
                 {editingPostId === post._id ? (

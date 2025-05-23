@@ -126,7 +126,7 @@ export default function ClosedForum() {
           filteredPosts.map(post => (
             <div
               key={post._id}
-              className="openforum-card-only-of"
+              className={`openforum-card-only-of ${post.visibility === 'closed' ? 'closed-post' : ''}`}
               onClick={() => navigate(`/message/${post._id}`)}
               style={{ cursor: 'pointer' }}
             >

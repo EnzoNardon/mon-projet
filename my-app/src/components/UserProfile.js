@@ -10,6 +10,7 @@ export default function UserProfile() {
   const [posts, setPosts] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasRequested, setHasRequested] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,7 +33,10 @@ export default function UserProfile() {
         if (!res.ok) throw new Error('Non autorisé');
         return res.json();
       })
-      .then(data => setUser(data))
+      .then(data => {
+        setUser(data);
+        setHasRequested(data.adminRequest === true);
+      })
       .catch(() => navigate('/'));
 
     // Fetch user posts
@@ -49,6 +53,21 @@ export default function UserProfile() {
       })
       .catch(err => console.error('Erreur récupération des posts :', err));
   }, [userId, navigate]);
+
+  const sendAdminRequest = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:3000/users/request-admin', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      alert('Demande envoyée avec succès.');
+      setHasRequested(true);
+    } else {
+      const error = await res.json();
+      alert(error.message);
+    }
+  };
 
   if (!user) return <p className="loading-text">Chargement du profil...</p>;
 
@@ -116,6 +135,14 @@ export default function UserProfile() {
                 Validations / Rôles 👑
               </button>
             )}
+            {!isAdmin && !hasRequested && (
+              <button onClick={sendAdminRequest} className="back-button">
+                🔺 Demande d'administrateur
+              </button>
+            )}
+            {!isAdmin && hasRequested && (
+              <div className="empty-notification">✅ Votre demande à été transférer.</div>
+            )}
           </div>
         )}
 
@@ -129,7 +156,7 @@ export default function UserProfile() {
             posts.map(post => (
               <div
                 key={post._id}
-                className="openforum-card-reply"
+                className={`openforum-card-reply ${post.visibility === 'closed' ? 'closed-post' : ''}`}
                 onClick={() => navigate(`/message/${post._id}`)}
                 style={{ cursor: 'pointer' }}
               >

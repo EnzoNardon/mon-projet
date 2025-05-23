@@ -20,6 +20,7 @@ class Users {
         firstname,
         role: 'user',          // ✅ Par défaut
         validated: false,      // ✅ Pas encore validé
+        adminRequest: false,
       };
   
       const result = await this.collection.insertOne(newUser);
@@ -84,7 +85,92 @@ class Users {
       throw new Error("Erreur lors de la validation de l'utilisateur");
     }
   }
-  
+
+  async requestAdmin(userId) {
+    try {
+      const user = await this.collection.findOne({ _id: new ObjectId(userId) });
+      if (!user) throw new Error("Utilisateur introuvable");
+
+      if (user.role === 'admin') throw new Error("Tu es déjà admin.");
+      if (user.adminRequest === true) throw new Error("Demande déjà envoyée.");
+
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { adminRequest: true } }
+      );
+    } catch (e) {
+      throw new Error("Erreur lors de la demande d'admin : " + e.message);
+    }
+  }
+
+  async getAdminRequests() {
+    try {
+      const users = await this.collection.find({
+        adminRequest: true,
+        role: { $ne: 'admin' } // zaten admin olmayanlar
+      }).toArray();
+
+      return users;
+    } catch (e) {
+      throw new Error("Erreur lors de la récupération des demandes d'admin");
+    }
+  }
+
+  async grantAdmin(userId) {
+    try {
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: { role: 'admin', adminRequest: false }
+        }
+      );
+    } catch (e) {
+      throw new Error("Erreur lors de l'élévation de l'utilisateur en admin");
+    }
+  }
+
+  async denyAdminRequest(userId) {
+    try {
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: { adminRequest: false }
+        }
+      );
+    } catch (e) {
+      throw new Error("Erreur lors du refus de la demande admin");
+    }
+  }
+
+  async revokeAdmin(userId) {
+    try {
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { role: 'user' } }
+      );
+    } catch (e) {
+      throw new Error("Admin kaldırma hatası: " + e.message);
+    }
+  }
+
+  async getAdmins() {
+    try {
+      return await this.collection.find({ role: 'admin' }).toArray();
+    } catch (e) {
+      throw new Error('Erreur lors de la récupération des admins');
+    }
+  }
+
+  async revokeAdmin(userId) {
+    try {
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { role: 'user' } }
+      );
+    } catch (e) {
+      throw new Error('Erreur lors de la révocation admin');
+    }
+  }
 }
 
 module.exports = Users;

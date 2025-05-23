@@ -52,13 +52,9 @@ class Posts {
     let filter = {};
 
     if (type === 'closed') {
-      filter = {
-        $or: [{ visibility: 'closed' }, { visibility: 'both' }]
-      };
+      filter = { visibility: 'closed' };
     } else if (type === 'open') {
-      filter = {
-        $or: [{ visibility: 'open' }, { visibility: 'both' }]
-      };
+      filter = { visibility: 'open' };
     }
 
     console.log("🔎 Filtre Mongo utilisé :", filter);
@@ -126,6 +122,25 @@ class Posts {
       throw new Error("Erreur lors de la récupération des réponses : " + err.message);
     }
   }
+
+  async toggleLike(postId, userId) {
+    const postObjectId = new ObjectId(postId);
+    const userObjectId = new ObjectId(userId);
+
+    const post = await this.collection.findOne({ _id: postObjectId });
+    if (!post) throw new Error("Post introuvable");
+
+    const alreadyLiked = post.likes?.some(id => id.toString() === userId);
+
+    const update = alreadyLiked
+      ? { $pull: { likes: userObjectId } }
+      : { $addToSet: { likes: userObjectId } };
+
+    await this.collection.updateOne({ _id: postObjectId }, update);
+
+    return !alreadyLiked;
+  }
+
 }
 
 module.exports = Posts;

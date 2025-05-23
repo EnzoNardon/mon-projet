@@ -263,10 +263,14 @@ h3 {
 
 .poster-name {
   color: black;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .poster-name:hover {
-  text-decoration: underline;
   cursor: pointer;
+  opacity: 0.5;
+}
+
+.closed-post {
+  border: 2px solid #d4af37 !important; /* AltÄ±n rengi Ã§erÃ§eve */
 }
