@@ -1,7 +1,5 @@
-// ✅ ClosedForum.js — construit à partir de ValidationPage.js + OpenForum.js (filtrage local)
-
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './OpenForum.css';
 
 export default function ClosedForum() {
@@ -12,10 +10,11 @@ export default function ClosedForum() {
   const [parentLogins, setParentLogins] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  const userId = localStorage.getItem('userId');
 
+  useEffect(() => {
     if (!token || role !== 'admin') {
       navigate('/');
       return;
@@ -27,7 +26,6 @@ export default function ClosedForum() {
       .then(res => res.json())
       .then(data => {
         const visible = data.filter(post => post.visibility === 'closed' || post.visibility === 'both');
-
         setPosts(visible);
         setFilteredPosts(visible);
 
@@ -70,6 +68,21 @@ export default function ClosedForum() {
     setFilteredPosts(filtered);
   };
 
+  const handleLike = async (postId) => {
+    await fetch(`http://localhost:3000/posts/${postId}/like`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const res = await fetch('http://localhost:3000/Allposts', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const updated = await res.json();
+    const visible = updated.filter(p => p.visibility === 'closed' || p.visibility === 'both');
+    setPosts(visible);
+    setFilteredPosts(visible);
+  };
+
   if (loading) {
     return (
       <div className="openforum-container">
@@ -92,7 +105,7 @@ export default function ClosedForum() {
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>
-          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+          <button className="logout-button" onClick={() => navigate(`/profil/${userId}`)}>
             👤 Mon profil
           </button>
           <button className="logout-button" onClick={() => {
@@ -123,26 +136,37 @@ export default function ClosedForum() {
         {filteredPosts.length === 0 ? (
           <p>Aucun message privé trouvé.</p>
         ) : (
-          filteredPosts.map(post => (
-            <div
-              key={post._id}
-              className={`openforum-card-only-of ${post.visibility === 'closed' ? 'closed-post' : ''}`}
-              onClick={() => navigate(`/message/${post._id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              <p>
-                <strong>{post.login}</strong> a écrit
-                {post.parentId && parentLogins[post._id] && (
-                  <> en réponse à <strong>{parentLogins[post._id]}</strong></>
-                )}
-                :
-              </p>
-              <p>{post.content}</p>
-              <div className="post-date">
-                {post.createdAt ? new Date(post.createdAt).toLocaleString('fr-FR') : 'Date inconnue'}
+          filteredPosts.map(post => {
+            const isLiked = post.likes?.includes(userId);
+            return (
+              <div
+                key={post._id}
+                className={`openforum-card-only-of ${post.visibility === 'closed' ? 'closed-post' : ''}`}
+              >
+                <p>
+                  <Link to={`/profil/${post.userId}`} className="poster-name">
+                    <strong>{post.login}</strong>
+                  </Link> a écrit
+                  {post.parentId && parentLogins[post._id] && (
+                    <> en réponse à <strong>{parentLogins[post._id]}</strong></>
+                  )} :
+                </p>
+                <p>{post.content}</p>
+                <div className="post-date">
+                  {post.createdAt ? new Date(post.createdAt).toLocaleString('fr-FR') : 'Date inconnue'}
+                  <br />
+                  ❤️ {post.likes?.length || 0} like(s)
+                </div>
+                <div className="post-actions">
+                  <button onClick={() => handleLike(post._id)}>
+                    {isLiked ? '💔 Unlike' : '❤️ Like'}
+                  </button>
+                  <button onClick={() => navigate(`/message/${post._id}`)}>👁️ Voir les réponses</button>
+                  <button onClick={() => navigate(`/profil/${post.userId}`)}>👤 Visiter le profil</button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

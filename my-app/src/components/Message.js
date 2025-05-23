@@ -194,6 +194,7 @@ export default function Message() {
                   <button onClick={handleLike}>
                     {isLiked ? '💔 Unlike' : '❤️ Like'}
                   </button>
+                  <button onClick={() => navigate(`/profil/${post.userId}`)}>👤 Visiter le profil</button>
                   {post.userId === userId && (
                     <>
                       <button onClick={() => setEditing(true)}>✏️ Modifier</button>

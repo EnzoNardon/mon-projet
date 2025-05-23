@@ -82,15 +82,6 @@ body {
   margin-bottom: 20px;
 }
 
-.openforum-card-only-of:hover{
-  transition-delay: 0.1s;
-  opacity: 0.5;
-}
-
-.openforum-card-only-of:active{
-  opacity: 0.3;
-}
-
 .openforum-card-only-of p {
   margin: 5px 0;
   font-size: 16px;
@@ -196,4 +187,63 @@ body {
 
 .closed-post {
   border: 2px solid #d4af37 !important; /* Altın renk çerçeve */
+}
+
+.post-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.post-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.post-actions button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.poster-name {
+  color: black;
+  text-decoration: underline;
+}
+
+.poster-name:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.openforum-card-only-of .post-actions button {
+  background-color: black !important;
+  color: white !important;
+}
+
+.openforum-card-only-of .post-actions button:hover {
+  opacity: 0.8;
+}
+
+.openforum-card-only-of .post-actions button:active {
+  opacity: 0.65;
+}
+
+.closed-post .post-actions button {
+  background-color: #d4af37 !important; /* gold */
+  color: black !important;
+}
+
+.closed-post .post-actions button:hover {
+  background-color: #c19d2c !important;
+  opacity: 0.9;
+}
+
+.closed-post .post-actions button:active {
+  opacity: 0.7;
 }

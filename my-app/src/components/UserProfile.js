@@ -123,6 +123,9 @@ export default function UserProfile() {
           <div className="profile-detail">
             <strong>Likes reçus :</strong> {totalLikes}
           </div>
+          <div className="profile-detail">
+            <strong>Rôle :</strong> {user.role}
+          </div>
         </div>
 
         {(currentUserId === userId) && (
@@ -137,7 +140,7 @@ export default function UserProfile() {
             )}
             {!isAdmin && !hasRequested && (
               <button onClick={sendAdminRequest} className="back-button">
-                🔺 Demande d'administrateur
+                Demande d'administrateur 🧑‍⚖️
               </button>
             )}
             {!isAdmin && hasRequested && (
@@ -166,6 +169,8 @@ export default function UserProfile() {
                 <p>{post.content}</p>
                 <div className="post-date">
                   {new Date(post.createdAt).toLocaleString('fr-FR')}
+                    <br />
+                    ❤️ {post.likes?.length || 0} like(s)
                 </div>
               </div>
             ))

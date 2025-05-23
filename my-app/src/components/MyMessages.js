@@ -13,6 +13,7 @@ export default function MyMessages() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const navigate = useNavigate();
+  const userId = localStorage.getItem('userId');
 
   const fetchPosts = useCallback(() => {
     const token = localStorage.getItem('token');
@@ -121,6 +122,17 @@ export default function MyMessages() {
     }
   };
 
+  const handleLike = async (postId) => {
+    const token = localStorage.getItem('token');
+
+    await fetch(`http://localhost:3000/posts/${postId}/like`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    fetchPosts();
+  };
+
   return (
     <>
       <div className="header-bar">
@@ -136,7 +148,7 @@ export default function MyMessages() {
           <button className="logout-button" onClick={() => navigate('/openforum')}>
             🌍 OpenForum
           </button>
-          <button className="logout-button" onClick={() => navigate(`/profil/${localStorage.getItem('userId')}`)}>
+          <button className="logout-button" onClick={() => navigate(`/profil/${userId}`)}>
             👤 Mon profil
           </button>
           <button className="logout-button" onClick={() => {
@@ -196,8 +208,13 @@ export default function MyMessages() {
                     <p>{post.content}</p>
                     <span className="post-date">
                       {new Date(post.createdAt).toLocaleString('fr-FR')}
+                      <br />
+                      ❤️ {post.likes?.length || 0} like(s)
                     </span>
                     <div className="post-actions">
+                      <button onClick={() => handleLike(post._id)}>
+                        {post.likes?.includes(userId) ? '💔 Unlike' : '❤️ Like'}
+                      </button>
                       <button onClick={() => navigate(`/message/${post._id}`)}>👁️ Voir les réponses</button>
                       <button onClick={() => {
                         setEditingPostId(post._id);
@@ -213,7 +230,7 @@ export default function MyMessages() {
         )}
 
         <div className="back-button-wrapper">
-          <Link to={`/profil/${localStorage.getItem('userId')}`} className="full-width-back-button">
+          <Link to={`/profil/${userId}`} className="full-width-back-button">
             ⬅️ Retour au profil
           </Link>
         </div>
